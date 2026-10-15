@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Git Sweep</title>
+  <desc id="desc">A white Git branch becomes a mint broom on a deep green rounded square.</desc>
+  <rect x="96" y="96" width="832" height="832" rx="188" fill="#123d37"/>
+  <g fill="none" stroke="#f4fbf4" stroke-width="52" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M420 574V282M420 460c0-100 230-38 230-146"/>
+  </g>
+  <g fill="#f4fbf4">
+    <circle cx="420" cy="282" r="56"/>
+    <circle cx="650" cy="314" r="56"/>
+  </g>
+  <g fill="#123d37">
+    <circle cx="420" cy="282" r="21"/>
+    <circle cx="650" cy="314" r="21"/>
+  </g>
+  <path d="M368 558h104a20 20 0 0 1 19 14l74 148a18 18 0 0 1-16 26H291a18 18 0 0 1-16-26l74-148a20 20 0 0 1 19-14Z" fill="#9fe8be"/>
+  <path d="m365 670-22 76m77-76v76m55-76 22 76" fill="none" stroke="#123d37" stroke-width="22" stroke-linecap="round"/>
+</svg>
