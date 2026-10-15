@@ -473,21 +473,41 @@ mod imp {
             .into());
         }
         let text = String::from_utf8_lossy(&output.stdout);
-        let details: Vec<_> = text
+        let details = launchctl_status_details(&text);
+        if details.is_empty() {
+            Ok("Loaded; hourly checks when logged in.".into())
+        } else {
+            Ok(format!(
+                "Loaded; hourly checks when logged in. {}",
+                details.join("; ")
+            ))
+        }
+    }
+
+    fn launchctl_status_details(text: &str) -> Vec<&str> {
+        const KEYS: [&str; 4] = ["state =", "pid =", "runs =", "last exit code ="];
+        let fields: Vec<_> = text
             .lines()
-            .filter(|line| {
-                let line = line.trim();
-                line.starts_with("state =")
-                    || line.starts_with("runs =")
-                    || line.starts_with("last exit code =")
-                    || line.starts_with("pid =")
+            .filter_map(|line| {
+                let value = line.trim_start();
+                let key = KEYS.iter().position(|key| value.starts_with(key))?;
+                Some((line.len() - value.len(), key, value))
             })
-            .map(str::trim)
             .collect();
-        Ok(format!(
-            "Loaded; hourly checks when logged in. {}",
-            details.join("; ")
-        ))
+        let Some(top_level_indent) = fields.iter().map(|(indent, _, _)| *indent).min() else {
+            return Vec::new();
+        };
+        let mut seen = [false; KEYS.len()];
+        fields
+            .into_iter()
+            .filter_map(|(indent, key, value)| {
+                if indent != top_level_indent || seen[key] {
+                    return None;
+                }
+                seen[key] = true;
+                Some(value)
+            })
+            .collect()
     }
 
     fn launchctl(args: &[&str]) -> Result<Output> {
@@ -1019,6 +1039,20 @@ mod imp {
             assert!(text.contains("/custom&amp;home"));
             assert!(text.contains("<string>scheduled</string>"));
             assert!(!text.contains("KeepAlive"));
+        }
+
+        #[test]
+        fn launchd_status_uses_service_fields_only() {
+            let output = "gui/501/dev.gitsweep = {\n\tstate = not running\n\truns = 1\n\tlast exit code = 0\n\tresource coalition = {\n\t\tstate = active\n\t}\n\tjetsam coalition = {\n\t\tstate = active\n\t}\n}";
+            assert_eq!(
+                launchctl_status_details(output),
+                vec!["state = not running", "runs = 1", "last exit code = 0"]
+            );
+            let running = "gui/501/dev.gitsweep = {\n    state = running\n    pid = 42\n    resource coalition = {\n        state = active\n    }\n}";
+            assert_eq!(
+                launchctl_status_details(running),
+                vec!["state = running", "pid = 42"]
+            );
         }
 
         #[test]
